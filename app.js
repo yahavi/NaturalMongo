@@ -26,8 +26,8 @@ var appEnv = cfenv.getAppEnv();
 
 var init = function(){
     MongoUsersDriver.init();
-    MongoUsersDriver.showRules("restaurants", "alpha");
-    // MongoUsersDriver.grantRule("restaurants", "alpha", ["dbOwner"]);
+
+     MongoUsersDriver.grantRule("restaurants", "alpha", ["root"]);
     MongoUsersDriver.showRules("restaurants", "alpha");
 };
 

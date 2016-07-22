@@ -95,7 +95,7 @@ module.exports = {
     }
 };
 
-var SingleDb = function(name, collections){
+var SingleDb = function (name, collections){
     this.name = name;
     this.collections = collections;
 };
