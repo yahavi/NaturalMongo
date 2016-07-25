@@ -1,0 +1,52 @@
+body {
+    background-color: #C3E4ED;
+    font-family: "Comic Sans MS";
+}
+
+h1 {
+
+    color: #388E8E;
+    margin-left: 20px;
+}
+h2{
+    font-size: 28px;
+}
+
+.header{
+    width: inherit;
+    height: 80px;
+    text-align: center;
+    font-size: 25px;
+}
+
+hr{
+    height: 2px;
+    background-color: lightgray;
+}
+
+#current_game{
+    text-align: center;
+}
+
+input {
+    height: 25px;
+    font-family: "Comic Sans MS";
+    border: 3px solid rgba(85, 85, 85, 0.64);
+    margin-bottom: 15px;
+    text-align: center;
+    box-shadow: 0 0 5px 1px #969696;
+    border-radius: 10px;
+}
+
+#log{
+    width: 600px;
+    height: 100px;
+    box-shadow: 0 0 5px 1px #969696;
+    border-radius: 10px;
+    font-size: 18px;
+    overflow-y: scroll;
+    resize: none;
+
+}
+
+
