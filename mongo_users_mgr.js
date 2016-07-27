@@ -7,7 +7,8 @@ var co = require('co');
 const ROLES = ['read', 'readWrite', 'dbAdmin', 'dbOwner', 'userAdmin'];
 
 const DB_NOT_FOUND = "Sorry, but i didn't understand your database name";
-const USER_NOT_FOUND = "Sorry, but the i didn't understand the username";
+const USER_NOT_FOUND = "Sorry, but i didn't understand the username";
+const ROLES_NOT_FOUND = "Sorry, but i didn't find any role";
 
 var dbList = [];
 
@@ -73,66 +74,76 @@ module.exports = {
         });
     },
 
-    grantRole : (db, collection, user, roles, cbk) => {
+    grantRole : function *(db, user, roles, cbk) {
         "use strict";
         var mongoSession;
-        co(function*() {
+        yield co(function*() {
             mongoSession = yield MongoClient.connect(url + db);
-            yield mongoSession.command({grantRolesToUser: user, roles: roles, collection: collection});
+            yield mongoSession.command({grantRolesToUser: user, roles: roles});
         }).then(()=>{
             mongoSession.close();
-            cbk();
         }).catch((err)=>{
             console.error(err.stack);
             mongoSession.close();
-            cbk(err);
+            throw err;
         });
     },
 
-    revokeRole : (db, user, roles, cbk) => {
+    revokeRole : function *(db, user, roles) {
         "use strict";
         var mongoSession;
-        co(function*() {
+        yield co(function*() {
             mongoSession = yield MongoClient.connect(url + db);
             yield mongoSession.command({revokeRolesFromUser: user, roles: roles});
         }).then(()=>{
             mongoSession.close();
-            cbk();
         }).catch((err)=>{
             console.error(err.stack);
             mongoSession.close();
-            cbk(err);
+            throw err;
         });
     },
 
     identifyRequest : (sentence) => {
         "use strict";
+        var roles = [];
+        var msg = "";
+        sentence = sentence.toLowerCase();
+
+        for (var role in ROLES){
+            var roleName = ROLES[role];
+            if (-1 < sentence.indexOf(roleName)){
+                roles.push(roleName);
+            }
+        }
+        if (0 == roles.length){
+            msg = ROLES_NOT_FOUND;
+        }
         for (var iDb in dbList){
             var currDb = dbList[iDb];
             var dbName = currDb["name"];
-            if (-1 > sentence.indexOf(dbName)){
-                console.log("Found " + dbName);
+            if (-1 < sentence.indexOf(dbName)){
                 var userName = "";
                 var collectionName = "";
                 for (var iUser in currDb["users"]){
                     var currUser = currDb["users"][iUser];
-                    if (-1 > sentence.indexOf(currUser)){
+                    if (-1 < sentence.indexOf(currUser)){
                         userName = currUser;
                         break;
                     }
                 }
                 if (!userName){
-                    return new SingleRequest(USER_NOT_FOUND, dbName);
+                    return new SingleRequest(USER_NOT_FOUND, dbName,
+                                             undefined, roles);
                 }
-                for (var iCollection in currDb["collections"]){
-                    var currCollection = currDb["collections"][iCollection];
-                    if (-1 > sentence.indexOf(currCollection)){
-                        collectionName = currCollection;
-                        break;
-                    }
-                }
-                return new SingleRequest("", dbName, userName, collectionName);
-
+                // for (var iCollection in currDb["collections"]){
+                //     var currCollection = currDb["collections"][iCollection];
+                //     if (-1 < sentence.indexOf(currCollection)){
+                //         collectionName = currCollection;
+                //         break;
+                //     }
+                // }
+                return new SingleRequest(msg, dbName, userName, roles);
             }
         }
         return new SingleRequest(DB_NOT_FOUND);
@@ -147,10 +158,11 @@ var SingleDb = function (name, collections, users){
     this.users = users;
 };
 
-var SingleRequest = function (msg, dbName, userName, collectionName){
+var SingleRequest = function (msg, dbName, userName, roles){
     "use strict";
     this.msg = msg;
     this.dbName = dbName;
     this.username = userName;
-    this.collectionName = collectionName;
+    this.roles = roles;
+    // this.collectionName = collectionName;
 }

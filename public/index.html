@@ -32,34 +32,57 @@
          * be disabled when its not the client's turn.
          */
         $("#send_button").click(function(){
-            console.log("click")
             var sentenceInput = $("#sentence_input");
-            var log = $("#log");
             var sentence = sentenceInput.val();
 
             if (sentence !== "") {
-                console.log("sending " + sentence);
-                $.ajax({
-                    type: "POST",
-                    url: '/sentence',
-                    dataType: 'json',
-                    data: sentence,
-                    complete: function (data) {
-                        log.text(log.val() + data.responseText + "\n");
-                        if (200 == data.status){
-                            if (confirm(data.responseText)){
-
-                            }
-
-                        } else if (201 == data.status){
-
-                        }
-                    }
-
-                });
+                ask(sentence);
             }
             sentenceInput.val('');
         });
+
+        var ask = function(sentence){
+            var log = $("#log");
+            console.log("sending " + sentence);
+            $.ajax({
+                type: "POST",
+                url: '/ask',
+                dataType: 'json',
+                data: sentence,
+                complete: function (data) {
+                    log.text(log.val() + data.responseText + "\n");
+                    if (200 == data.status){
+                        if (confirm(data.responseText)){ // pop up window
+                            perform(data.responseText);
+                        }
+
+                    } else if (201 == data.status){
+
+                    }
+                }
+
+            });
+        };
+
+        var perform = function(sentence){
+            var log = $("#log");
+            $.ajax({
+                type: "POST",
+                url: '/perform',
+                dataType: 'json',
+                data: sentence,
+                complete: function (data) {
+                    console.log(data)
+                    log.text(log.val() + data.responseText + "\n");
+                    if (200 == data.status){
+
+                    } else if (201 == data.status){
+
+                    }
+                }
+
+            });
+        }
 
     }); // $(document).ready
 
