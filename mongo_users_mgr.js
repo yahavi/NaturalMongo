@@ -54,32 +54,15 @@ module.exports = {
 
     },
 
-    showRoles : (db, user, cbk) => {
-        "use strict";
-        var mongoSession;
-        co(function*() {
-            mongoSession = yield MongoClient.connect(url + db);
-            var res =
-                yield mongoSession.command({usersInfo: {user: user, db: db}});
-            var users = res["users"];
-            var roles = users[0]["roles"];
-            console.log(JSON.stringify(roles))
-        }).then(()=>{
-            mongoSession.close();
-            cbk();
-        }).catch((err)=>{
-            console.error(err.stack);
-            mongoSession.close();
-            cbk(err);
-        });
-    },
-
-    grantRole : function *(db, user, roles, cbk) {
+    showRoles : function *(singleRequest) {
         "use strict";
         var mongoSession;
         yield co(function*() {
-            mongoSession = yield MongoClient.connect(url + db);
-            yield mongoSession.command({grantRolesToUser: user, roles: roles});
+            mongoSession = yield MongoClient.connect(url + singleRequest.dbName);
+            var res = yield mongoSession.command({usersInfo:
+                {user: singleRequest.username, db: singleRequest.dbName}});
+            var users = res["users"];
+            singleRequest.currentRoles = yield users[0]["roles"];
         }).then(()=>{
             mongoSession.close();
         }).catch((err)=>{
@@ -89,12 +72,31 @@ module.exports = {
         });
     },
 
-    revokeRole : function *(db, user, roles) {
+    grantRole : function *(singleRequest) {
         "use strict";
         var mongoSession;
         yield co(function*() {
-            mongoSession = yield MongoClient.connect(url + db);
-            yield mongoSession.command({revokeRolesFromUser: user, roles: roles});
+            mongoSession = yield MongoClient.connect(url + singleRequest.dbName);
+            yield mongoSession.command(
+                {grantRolesToUser: singleRequest.username,
+                 roles: singleRequest.roles});
+        }).then(()=>{
+            mongoSession.close();
+        }).catch((err)=>{
+            console.error(err.stack);
+            mongoSession.close();
+            throw err;
+        });
+    },
+
+    revokeRole : function *(singleRequest) {
+        "use strict";
+        var mongoSession;
+        yield co(function*() {
+            mongoSession = yield MongoClient.connect(url + singleRequest.dbName);
+            yield mongoSession.command(
+                {revokeRolesFromUser: singleRequest.username,
+                 roles: singleRequest.roles});
         }).then(()=>{
             mongoSession.close();
         }).catch((err)=>{
@@ -109,11 +111,12 @@ module.exports = {
         var roles = [];
         var msg = "";
         sentence = sentence.toLowerCase();
+        var splittedSentence = sentence.split(" ");
 
         for (var role in ROLES){
-            var roleName = ROLES[role];
-            if (-1 < sentence.indexOf(roleName)){
-                roles.push(roleName);
+            var roleName = ROLES[role].toLowerCase();
+            if (-1 < splittedSentence.indexOf(roleName)){
+                roles.push(ROLES[role]); // Use the role as is
             }
         }
         if (0 == roles.length){
@@ -122,17 +125,17 @@ module.exports = {
         for (var iDb in dbList){
             var currDb = dbList[iDb];
             var dbName = currDb["name"];
-            if (-1 < sentence.indexOf(dbName)){
-                var userName = "";
-                var collectionName = "";
+            if (-1 < splittedSentence.indexOf(dbName)){
+                var username = "";
+                // var collectionName = "";
                 for (var iUser in currDb["users"]){
                     var currUser = currDb["users"][iUser];
-                    if (-1 < sentence.indexOf(currUser)){
-                        userName = currUser;
+                    if (-1 < splittedSentence.indexOf(currUser.toLowerCase())){
+                        username = currUser;
                         break;
                     }
                 }
-                if (!userName){
+                if (!username){
                     return new SingleRequest(USER_NOT_FOUND, dbName,
                                              undefined, roles);
                 }
@@ -143,7 +146,7 @@ module.exports = {
                 //         break;
                 //     }
                 // }
-                return new SingleRequest(msg, dbName, userName, roles);
+                return new SingleRequest(msg, dbName, username, roles);
             }
         }
         return new SingleRequest(DB_NOT_FOUND);
@@ -158,11 +161,12 @@ var SingleDb = function (name, collections, users){
     this.users = users;
 };
 
-var SingleRequest = function (msg, dbName, userName, roles){
+var SingleRequest = function (msg, dbName, username, roles){
     "use strict";
     this.msg = msg;
     this.dbName = dbName;
-    this.username = userName;
+    this.username = username;
     this.roles = roles;
-    // this.collectionName = collectionName;
-}
+    this.action = "";
+    this.currentRoles = "";
+};

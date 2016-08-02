@@ -6,9 +6,10 @@
 		"start": "node app.js"
 	},
 	"dependencies": {
-		"express": "4.13.x",
-		"cfenv": "1.0.x",
-		"co": "*"
+		"express": "4.*",
+		"cfenv": "1.*",
+		"co": "*",
+		"express-session": "1.*"
 	},
 	"repository": {},
 	"engines": {

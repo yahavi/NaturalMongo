@@ -1,23 +1,24 @@
-/*eslint-env node*/
 
 var co = require('co');
 var assert = require('assert');
 var MongoUsersDriver = require('./mongo_users_mgr');
 var NLC = require('./natural_language_classifier');
+var session = require('express-session');
+var crypto = require('crypto');
 
 // ================ TODOs ===================
 // Backend:
 // TODO - Add roles to a collection, e.g. privileges
 // TODO - Connect Watson
 // TODO - Train Watson better
-// TODO - Grant - Verify that the role not there
-// TODO - Revoke - Verify that the role is there
+// TODO? - Grant - Verify that the role not there
+// TODO? - Revoke - Verify that the role is there
 // TODO - HTTPS
 // TODO - Beautify code
 
 // Frontend:
 // TODO - Connect user to DB with login and password
-// TODO - Add more informative output. Arrange all in boxes.
+// TODO - Add more informative output. Arrange all in boxes - Valeriya
 // TODO - CSS - Valeriya
 //
 // ==========================================
@@ -42,6 +43,12 @@ app.use(express.static(__dirname + '/public'));
 // get the app environment from Cloud Foundry
 var appEnv = cfenv.getAppEnv();
 
+app.use(session({
+    secret: crypto.randomBytes(64).toString('hex'),
+    saveUninitialized: false,
+    resave: false
+}));
+
 // start server on the specified port and binding host
 app.listen(appEnv.port, '0.0.0.0', function () {
     // print a message when the server starts listening
@@ -63,14 +70,19 @@ app.listen(appEnv.port, '0.0.0.0', function () {
         });
 
         req.on('end', ()=> {
-            var status = 200;
-            var singleRequest = MongoUsersDriver.identifyRequest(body);
-            if (singleRequest.msg) {
-                status = 201;
-            } else {
-                singleRequest.action = NLC.classify(body);
-            }
-            res.status(status).send(JSON.stringify(singleRequest));
+            co(function *() {
+                var status = 200;
+                var singleRequest = MongoUsersDriver.identifyRequest(body);
+                if (singleRequest.dbName && singleRequest.username){
+                    yield MongoUsersDriver.showRoles(singleRequest);
+                }
+                if (singleRequest.msg) {
+                    status = 201;
+                } else {
+                    singleRequest.action = NLC.classify(body);
+                }
+                res.status(status).send(JSON.stringify(singleRequest));
+            });
         });
     });
 
@@ -90,12 +102,10 @@ app.listen(appEnv.port, '0.0.0.0', function () {
             co(function*() {
                 switch (singleRequest.action) {
                     case NLC.GRANT:
-                        yield MongoUsersDriver.grantRole(singleRequest.dbName,
-                            singleRequest.username, singleRequest.roles);
+                        yield MongoUsersDriver.grantRole(singleRequest);
                         break;
                     case NLC.REVOKE:
-                        yield MongoUsersDriver.revokeRole(singleRequest.dbName,
-                            singleRequest.username, singleRequest.roles);
+                        yield MongoUsersDriver.revokeRole(singleRequest);
                         break;
                     default:
                         response = "Error! Unknown action";
