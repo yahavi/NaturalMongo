@@ -9,7 +9,8 @@
 		"express": "4.*",
 		"cfenv": "1.*",
 		"co": "*",
-		"express-session": "1.*"
+		"express-session": "1.*",
+		"watson-developer-cloud": "2.*"
 	},
 	"repository": {},
 	"engines": {

@@ -1,0 +1,7 @@
+Applications:
+- services:
+  - natural-language-classifier-standard
+  name: NaturalMongo
+  command: node app.js
+  path: .
+  memory: 256M

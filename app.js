@@ -9,7 +9,6 @@ var crypto = require('crypto');
 // ================ TODOs ===================
 // Backend:
 // TODO - Add roles to a collection, e.g. privileges
-// TODO - Connect Watson
 // TODO - Train Watson better
 // TODO? - Grant - Verify that the role not there
 // TODO? - Revoke - Verify that the role is there
@@ -70,18 +69,34 @@ app.listen(appEnv.port, '0.0.0.0', function () {
         });
 
         req.on('end', ()=> {
+            var status = 200;
+            var singleRequest;
             co(function *() {
-                var status = 200;
-                var singleRequest = MongoUsersDriver.identifyRequest(body);
+                status = 200;
+                singleRequest = MongoUsersDriver.identifyRequest(body);
                 if (singleRequest.dbName && singleRequest.username){
                     yield MongoUsersDriver.showRoles(singleRequest);
                 }
                 if (singleRequest.msg) {
                     status = 201;
-                } else {
-                    singleRequest.action = NLC.classify(body);
                 }
-                res.status(status).send(JSON.stringify(singleRequest));
+            }).catch((err)=> {
+                console.log("Error caught! " + err);
+                res.status(status).send("Error: " + err.message);
+            }).then(() =>{
+                if (200 === status) {
+                    NLC.classify(body, (err, response)=> {
+                        if (err){
+                            status = 201;
+                            res.status(status).send("Error: " + err.message);
+                        } else {
+                            singleRequest.action = response;
+                            res.status(status).json(singleRequest);
+                        }
+                    });
+                } else {
+                    res.status(status).json(singleRequest);
+                }
             });
         });
     });
