@@ -13,77 +13,43 @@
 </head>
 
 <body>
-<div id="current_game">
-    <h2 id="current_game_name"></h2>
-    <!--The input of the player-->
-    <input type="text" title="sentence_input" id="sentence_input"><br>
-    <!--Send the sentence to the server button-->
-    <button id="send_button" class="main_button">Send</button><br>
-    <!--A log that shows all news from the server-->
-    <textarea id="log" title="log" readonly="readonly"></textarea><br>
 
-</div>
+    IP: <input type="text" title="ip" id="ip_input"><br>
+    Example: 159.122.221.134<br><br>
+    Port: <input type="text" title="port" id="port_input"><br>
+    Example: 27017<br><br>
+    <button id="login">Login</button><br>
+    <p title="response" id="response_from_server"></p>
 <script>
 
     $(document).ready(function() {
 
-        /**
-         * Send a sentence to the server. Notice that the send button may
-         * be disabled when its not the client's turn.
-         */
-        $("#send_button").click(function(){
-            var sentenceInput = $("#sentence_input");
-            var sentence = sentenceInput.val();
+        $("#login").click(function(){
+            var ip = $("#ip_input").val();
+            var port = $("#port_input").val();
 
-            if (sentence !== "") {
-                ask(sentence);
+            if (ip && port){
+                var login = new Login(ip, port);
+                $.ajax({
+                    type: "POST",
+                    url: '/login',
+                    dataType: 'json',
+                    data: JSON.stringify(login),
+                    complete: function (data) {
+                        if (200 == data.status){
+                            $('body').html(data.responseText);
+                        } else if (201 == data.status){
+                            $("#response_from_server").text(data.responseText);
+                        }
+                    }
+                });
             }
-            sentenceInput.val('');
         });
 
-        var ask = function(sentence){
-            var log = $("#log");
-            console.log("sending " + sentence);
-            $.ajax({
-                type: "POST",
-                url: '/ask',
-                dataType: 'json',
-                data: sentence,
-                complete: function (data) {
-                    log.text(log.val() + data.responseText + "\n");
-                    if (200 == data.status){
-                        if (confirm(data.responseText)){ // pop up window
-                            perform(data.responseText);
-                        }
-
-                    } else if (201 == data.status){
-
-                    }
-                }
-
-            });
-        };
-
-        var perform = function(sentence){
-            var log = $("#log");
-            $.ajax({
-                type: "POST",
-                url: '/perform',
-                dataType: 'json',
-                data: sentence,
-                complete: function (data) {
-                    console.log(data)
-                    log.text(log.val() + data.responseText + "\n");
-                    if (200 == data.status){
-
-                    } else if (201 == data.status){
-
-                    }
-                }
-
-            });
+        var Login = function(ip, port){
+            this.ip = ip;
+            this.port = port;
         }
-
     }); // $(document).ready
 
 </script>

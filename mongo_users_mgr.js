@@ -1,24 +1,25 @@
 
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
-var url = 'mongodb://159.122.221.134:27017/';
 var co = require('co');
 
 const ROLES = ['read', 'readWrite', 'dbAdmin', 'dbOwner', 'userAdmin'];
 
-const DB_NOT_FOUND = "Sorry, but i didn't understand your database name";
+const DB_NOT_FOUND = "Sorry, but i didn't understand the database name";
 const USER_NOT_FOUND = "Sorry, but i didn't understand the username";
 const ROLES_NOT_FOUND = "Sorry, but i didn't find any role";
 
-var dbList = [];
+// var dbList = [];
 
 module.exports = {
 
-    init : (ip, port, cbk) => {
+    init : function *(ip, port, session) {
         "use strict";
-        url = 'mongodb://' + ip + ":" + port + "/";
+        var dbList = [];
+        var url = 'mongodb://' + ip + ":" + port + "/";
         var mongoSession;
-        co(function*() {
+        yield co(function*() {
+            console.log("Connecting to " + url);
             mongoSession = yield MongoClient.connect(url);
             console.log("Connected correctly to server");
             var adminDb = mongoSession.admin();
@@ -41,22 +42,24 @@ module.exports = {
                 }
                 dbList.push(new SingleDb(dbDetails["name"], collections, users));
             }
-
         }).then(()=>{
             console.log(dbList);
+            session.dbList = dbList;
             mongoSession.close();
-            cbk()
         }).catch((err)=>{
             console.error(err.stack);
-            mongoSession.close();
-            cbk(err)
+            if (mongoSession){
+                mongoSession.close();
+            }
+            throw err;
         });
 
     },
 
-    showRoles : function *(singleRequest) {
+    showRoles : function *(login, singleRequest) {
         "use strict";
         var mongoSession;
+        var url = 'mongodb://' + login.ip + ":" + login.port + "/";
         yield co(function*() {
             mongoSession = yield MongoClient.connect(url + singleRequest.dbName);
             var res = yield mongoSession.command({usersInfo:
@@ -72,9 +75,10 @@ module.exports = {
         });
     },
 
-    grantRole : function *(singleRequest) {
+    grantRole : function *(login, singleRequest) {
         "use strict";
         var mongoSession;
+        var url = 'mongodb://' + login.ip + ":" + login.port + "/";
         yield co(function*() {
             mongoSession = yield MongoClient.connect(url + singleRequest.dbName);
             yield mongoSession.command(
@@ -89,9 +93,10 @@ module.exports = {
         });
     },
 
-    revokeRole : function *(singleRequest) {
+    revokeRole : function *(login, singleRequest) {
         "use strict";
         var mongoSession;
+        var url = 'mongodb://' + login.ip + ":" + login.port + "/";
         yield co(function*() {
             mongoSession = yield MongoClient.connect(url + singleRequest.dbName);
             yield mongoSession.command(
@@ -106,7 +111,7 @@ module.exports = {
         });
     },
 
-    identifyRequest : (sentence) => {
+    identifyRequest : (sentence, dbList) => {
         "use strict";
         var roles = [];
         var msg = "";

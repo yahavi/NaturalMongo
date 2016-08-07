@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>NaturalMongo</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="//code.jquery.com/jquery-latest.min.js"
+            type="text/javascript"></script>
+
+</head>
+
+<body>
+<div id="current_game">
+    <h2 id="current_game_name"></h2>
+    <!--The input of the player-->
+    <input type="text" title="sentence_input" id="sentence_input"><br>
+    <!--Send the sentence to the server button-->
+    <button id="send_button" class="main_button">Send</button><br>
+    <!--A log that shows all news from the server-->
+    <textarea id="log" title="log" readonly="readonly"></textarea><br>
+    <button id="logout_button" class="main_button">Log out</button><br>
+</div>
+<script>
+
+    $(document).ready(function() {
+
+        $("#send_button").click(function(){
+            var sentenceInput = $("#sentence_input");
+            var sentence = sentenceInput.val();
+
+            if (sentence !== "") {
+                ask(sentence);
+            }
+            sentenceInput.val('');
+        });
+
+        var ask = function(sentence){
+            var log = $("#log");
+            console.log("sending " + sentence);
+            $.ajax({
+                type: "POST",
+                url: '/ask',
+                dataType: 'json',
+                data: sentence,
+                complete: function (data) {
+                    log.text(log.val() + data.responseText + "\n");
+                    if (200 == data.status){
+                        if (confirm(data.responseText)){ // pop up window
+                            perform(data.responseText);
+                        }
+
+                    } else if (201 == data.status){
+
+                    }
+                }
+            });
+        };
+
+        var perform = function(sentence){
+            var log = $("#log");
+            $.ajax({
+                type: "POST",
+                url: '/perform',
+                dataType: 'json',
+                data: sentence,
+                complete: function (data) {
+                    console.log(data)
+                    log.text(log.val() + data.responseText + "\n");
+                    if (200 == data.status){
+
+                    } else if (201 == data.status){
+
+                    }
+                }
+            });
+        };
+
+        $("#logout_button").click(function(){
+            $.ajax({
+                type: "GET",
+                url: '/logout',
+                dataType: 'json',
+                complete: function (data) {
+                    if (200 == data.status){
+                        $('body').html(data.responseText);
+                    } else if (201 == data.status){
+
+                    }
+                }
+            });
+
+        });
+
+    }); // $(document).ready
+
+</script>
+</body>
+</html>
