@@ -9,9 +9,9 @@ var SingleDb = NaturalMongoDefs.SingleDb;
 
 const ROLES = ['read', 'readWrite', 'dbAdmin', 'dbOwner', 'userAdmin'];
 
-const DB_NOT_FOUND = "Sorry, but i didn't understand the database name";
-const USER_NOT_FOUND = "Sorry, but i didn't understand the username";
-const ROLES_NOT_FOUND = "Sorry, but i didn't find any role";
+const DB_NOT_FOUND = "Please mention the database name";
+const USER_NOT_FOUND = "Please mention the username";
+const ROLES_NOT_FOUND = "Please mention a role";
 
 module.exports = {
 
@@ -166,7 +166,7 @@ var getUrl = function(login){
     "use strict";
     var userAndPass = (login.username && login.password) ?
     login.username + ":" + login.password + "@" : "";
-    return 'mongodb://' + userAndPass + login.ip + ":" + login.port + "/";
+    return 'mongodb://' + userAndPass + login.ip + ":" + login.port + "/" + login.dbName;
 };
 
 var getSingleDb = function *(mongoSession, dbName, dbList){
@@ -193,5 +193,4 @@ var Role = function(roleName, dbName){
     "use strict";
     this.role = roleName;
     this.db = dbName;
-
 };

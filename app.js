@@ -19,6 +19,7 @@ var crypto = require('crypto');
 // Frontend:
 // TODO - Add more informative output. Arrange all in boxes? - Valeriya
 // TODO - CSS - Valeriya
+// TODO - Input checks for security
 //
 // ==========================================
 
@@ -27,8 +28,6 @@ var crypto = require('crypto');
 // const MONGO_PORT = 27017;
 const LOGIN_HTML_PATH = __dirname + '/public/login.html';
 const MAIN_HTML_PATH = __dirname + "/public/natural_mongo.html";
-
-var Login = NaturalMongoDefs.Login;
 
 // This application uses express as its web server
 // for more info, see: http://expressjs.com
@@ -115,7 +114,6 @@ app.post('/ask', (req, res) =>{
                 status = 201;
             }
         }).then(() =>{
-            console.log("Calling then")
             if (200 === status) {
                 NLC.classify(body, (err, response)=> {
                     if (err){
