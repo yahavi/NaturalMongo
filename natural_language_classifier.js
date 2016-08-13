@@ -30,7 +30,7 @@ module.exports = {
             (err, response) => {
                "use strict";
                 var action = parseAction(response.top_class);
-                cbk(err, action)
+                cbk(err, action);
             }
         );
     }

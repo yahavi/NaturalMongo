@@ -1,7 +1,11 @@
 
+var NaturalMongoDefs = require('./natural_mongo_defs');
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var co = require('co');
+
+var SingleRequest = NaturalMongoDefs.SingleRequest;
+var SingleDb = NaturalMongoDefs.SingleDb;
 
 const ROLES = ['read', 'readWrite', 'dbAdmin', 'dbOwner', 'userAdmin'];
 
@@ -9,14 +13,13 @@ const DB_NOT_FOUND = "Sorry, but i didn't understand the database name";
 const USER_NOT_FOUND = "Sorry, but i didn't understand the username";
 const ROLES_NOT_FOUND = "Sorry, but i didn't find any role";
 
-// var dbList = [];
-
 module.exports = {
 
-    init : function *(ip, port, session) {
+    init : function *(login, session) {
         "use strict";
         var dbList = [];
-        var url = 'mongodb://' + ip + ":" + port + "/";
+
+        var url = getUrl(login);
         var mongoSession;
         yield co(function*() {
             console.log("Connecting to " + url);
@@ -24,24 +27,16 @@ module.exports = {
             console.log("Connected correctly to server");
             var adminDb = mongoSession.admin();
 
-            // List all the available databases
             var dbs = yield adminDb.listDatabases();
 
-            for (var dbDetails of yield dbs["databases"]){
-                var currentDb = mongoSession.db(dbDetails["name"]);
-                var collections = [];
-                var users = [];
-                var dbCollections = yield currentDb.listCollections().toArray();
-
-                for (var collection of yield dbCollections){
-                    collections.push(collection["name"]);
+            if (login.db){
+                yield getSingleDb(mongoSession, login.db, dbList);
+            } else {
+                for (var dbDetails of yield dbs["databases"]){
+                    yield getSingleDb(mongoSession, dbDetails["name"], dbList);
                 }
-                var usersDump = yield currentDb.command({ usersInfo: 1 });
-                for (var user in usersDump["users"]){
-                    users.push(usersDump["users"][user]["user"]);
-                }
-                dbList.push(new SingleDb(dbDetails["name"], collections, users));
             }
+
         }).then(()=>{
             console.log(dbList);
             session.dbList = dbList;
@@ -59,9 +54,10 @@ module.exports = {
     showRoles : function *(login, singleRequest) {
         "use strict";
         var mongoSession;
-        var url = 'mongodb://' + login.ip + ":" + login.port + "/";
+        var url = getUrl(login);
         yield co(function*() {
-            mongoSession = yield MongoClient.connect(url + singleRequest.dbName);
+            console.log("Connecting to " + url + singleRequest.dbName);
+            mongoSession = yield MongoClient.connect(url);
             var res = yield mongoSession.command({usersInfo:
                 {user: singleRequest.username, db: singleRequest.dbName}});
             var users = res["users"];
@@ -70,7 +66,7 @@ module.exports = {
             mongoSession.close();
         }).catch((err)=>{
             console.error(err.stack);
-            mongoSession.close();
+            if (mongoSession) mongoSession.close();
             throw err;
         });
     },
@@ -78,9 +74,12 @@ module.exports = {
     grantRole : function *(login, singleRequest) {
         "use strict";
         var mongoSession;
-        var url = 'mongodb://' + login.ip + ":" + login.port + "/";
+        var url = getUrl(login);
         yield co(function*() {
-            mongoSession = yield MongoClient.connect(url + singleRequest.dbName);
+            var dbName = singleRequest.dbName ?
+                         singleRequest.dbName : login.dbName;
+            mongoSession = yield MongoClient.connect(url);
+            mongoSession = mongoSession.db(dbName);
             yield mongoSession.command(
                 {grantRolesToUser: singleRequest.username,
                  roles: singleRequest.roles});
@@ -88,7 +87,7 @@ module.exports = {
             mongoSession.close();
         }).catch((err)=>{
             console.error(err.stack);
-            mongoSession.close();
+            if (mongoSession) mongoSession.close();
             throw err;
         });
     },
@@ -96,9 +95,12 @@ module.exports = {
     revokeRole : function *(login, singleRequest) {
         "use strict";
         var mongoSession;
-        var url = 'mongodb://' + login.ip + ":" + login.port + "/";
+        var url = getUrl(login);
         yield co(function*() {
-            mongoSession = yield MongoClient.connect(url + singleRequest.dbName);
+            var dbName = singleRequest.dbName ?
+                singleRequest.dbName : login.dbName;
+            mongoSession = yield MongoClient.connect(url);
+            mongoSession = mongoSession.db(dbName);
             yield mongoSession.command(
                 {revokeRolesFromUser: singleRequest.username,
                  roles: singleRequest.roles});
@@ -106,7 +108,7 @@ module.exports = {
             mongoSession.close();
         }).catch((err)=>{
             console.error(err.stack);
-            mongoSession.close();
+            if (mongoSession) mongoSession.close();
             throw err;
         });
     },
@@ -116,26 +118,27 @@ module.exports = {
         var roles = [];
         var msg = "";
         sentence = sentence.toLowerCase();
-        var splittedSentence = sentence.split(" ");
+        var splitSentence = sentence.split(" ");
 
-        for (var role in ROLES){
-            var roleName = ROLES[role].toLowerCase();
-            if (-1 < splittedSentence.indexOf(roleName)){
-                roles.push(ROLES[role]); // Use the role as is
-            }
-        }
-        if (0 == roles.length){
-            msg = ROLES_NOT_FOUND;
-        }
         for (var iDb in dbList){
             var currDb = dbList[iDb];
             var dbName = currDb["name"];
-            if (-1 < splittedSentence.indexOf(dbName)){
+            if (-1 < splitSentence.indexOf(dbName)){
                 var username = "";
                 // var collectionName = "";
+                for (var role in ROLES){
+                    var roleName = ROLES[role].toLowerCase();
+                    if (-1 < splitSentence.indexOf(roleName)){
+                        roles.push(new Role(ROLES[role], dbName)); // Use the role as is
+                    }
+                }
+                if (!roles){
+                    msg = ROLES_NOT_FOUND;
+                }
+
                 for (var iUser in currDb["users"]){
                     var currUser = currDb["users"][iUser];
-                    if (-1 < splittedSentence.indexOf(currUser.toLowerCase())){
+                    if (-1 < splitSentence.indexOf(currUser.toLowerCase())){
                         username = currUser;
                         break;
                     }
@@ -159,19 +162,36 @@ module.exports = {
     }
 };
 
-var SingleDb = function (name, collections, users){
+var getUrl = function(login){
     "use strict";
-    this.name = name;
-    this.collections = collections;
-    this.users = users;
+    var userAndPass = (login.username && login.password) ?
+    login.username + ":" + login.password + "@" : "";
+    return 'mongodb://' + userAndPass + login.ip + ":" + login.port + "/";
 };
 
-var SingleRequest = function (msg, dbName, username, roles){
+var getSingleDb = function *(mongoSession, dbName, dbList){
     "use strict";
-    this.msg = msg;
-    this.dbName = dbName;
-    this.username = username;
-    this.roles = roles;
-    this.action = "";
-    this.currentRoles = "";
+    yield co(function *() {
+        var currentDb = mongoSession.db(dbName);
+        var collections = [];
+        var users = [];
+        var dbCollections = yield currentDb.listCollections().toArray();
+
+        for (var collection of yield dbCollections){
+            collections.push(collection["name"]);
+        }
+        var usersDump = yield currentDb.command({ usersInfo: 1 });
+        for (var user in usersDump["users"]){
+            users.push(usersDump["users"][user]["user"]);
+        }
+        dbList.push(new SingleDb(dbName, collections, users));
+    });
+
+};
+
+var Role = function(roleName, dbName){
+    "use strict";
+    this.role = roleName;
+    this.db = dbName;
+
 };

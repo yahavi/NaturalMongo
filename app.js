@@ -1,4 +1,5 @@
 
+var NaturalMongoDefs = ('./natural_mongo_defs');
 var co = require('co');
 var assert = require('assert');
 var MongoUsersDriver = require('./mongo_users_mgr');
@@ -12,21 +13,23 @@ var crypto = require('crypto');
 // TODO - Train Watson better
 // TODO? - Grant - Verify that the role not there
 // TODO? - Revoke - Verify that the role is there
+// TODO - Upload to cloud
 // TODO - HTTPS
-// TODO - Beautify code
 
 // Frontend:
-// TODO - Connect user to DB with login and password
-// TODO - Add more informative output. Arrange all in boxes - Valeriya
+// TODO - Add more informative output. Arrange all in boxes? - Valeriya
 // TODO - CSS - Valeriya
 //
 // ==========================================
 
 
-const MONGO_IP = '159.122.221.134';
-const MONGO_PORT = 27017;
-const INDEX_HTML_PATH = __dirname + '/public/index.html';
+// const MONGO_IP = '159.122.221.134';
+// const MONGO_PORT = 27017;
+const LOGIN_HTML_PATH = __dirname + '/public/login.html';
 const MAIN_HTML_PATH = __dirname + "/public/natural_mongo.html";
+
+var Login = NaturalMongoDefs.Login;
+
 // This application uses express as its web server
 // for more info, see: http://expressjs.com
 var express = require('express');
@@ -52,7 +55,7 @@ app.get('/', (req, res) =>{
     if (session && session.login && session.dbList){
         sendHtml(MAIN_HTML_PATH, res);
     } else {
-        sendHtml(INDEX_HTML_PATH, res);
+        sendHtml(LOGIN_HTML_PATH, res);
     }
 });
 
@@ -77,9 +80,9 @@ app.post('/login', (req, res) =>{
         var login = JSON.parse(body);
         console.log(JSON.stringify(login));
         co(function *() {
-            yield MongoUsersDriver.init(login.ip, login.port, req.session);
+            yield MongoUsersDriver.init(login, req.session);
         }).then(()=>{
-            req.session.login = new Login(login.ip, login.port);
+            req.session.login = login;
             sendHtml(MAIN_HTML_PATH, res);
         }).catch((err)=> {
             console.log("Error caught! " + err);
@@ -111,10 +114,8 @@ app.post('/ask', (req, res) =>{
             if (singleRequest.msg) {
                 status = 201;
             }
-        }).catch((err)=> {
-            console.log("Error caught! " + err);
-            res.status(status).send("Error: " + err.message);
         }).then(() =>{
+            console.log("Calling then")
             if (200 === status) {
                 NLC.classify(body, (err, response)=> {
                     if (err){
@@ -128,7 +129,10 @@ app.post('/ask', (req, res) =>{
             } else {
                 res.status(status).json(singleRequest);
             }
-        });
+        }).catch((err)=> {
+            console.log("Error caught! " + err);
+            res.status(status).send("Error: " + err.message);
+        })
     });
 });
 
@@ -175,13 +179,10 @@ app.get('/logout', (req, res)=>{
             console.error(err);
         }
     });
-    sendHtml(INDEX_HTML_PATH, res);
+    sendHtml(LOGIN_HTML_PATH, res);
 });
 
-var Login = function(ip, port){
-    this.ip = ip;
-    this.port = port;
-};
+
 
 /**
  * Send a HTML to the client
