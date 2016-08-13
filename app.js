@@ -1,11 +1,10 @@
 
-var NaturalMongoDefs = ('./natural_mongo_defs');
-var co = require('co');
-var assert = require('assert');
+var co               = require('co');
+var assert           = require('assert');
 var MongoUsersDriver = require('./mongo_users_mgr');
-var NLC = require('./natural_language_classifier');
-var session = require('express-session');
-var crypto = require('crypto');
+var NLC              = require('./natural_language_classifier');
+var session          = require('express-session');
+var crypto           = require('crypto');
 
 // ================ TODOs ===================
 // Backend:
@@ -20,14 +19,11 @@ var crypto = require('crypto');
 // TODO - Add more informative output. Arrange all in boxes? - Valeriya
 // TODO - CSS - Valeriya
 // TODO - Input checks for security
-//
 // ==========================================
 
 
-// const MONGO_IP = '159.122.221.134';
-// const MONGO_PORT = 27017;
 const LOGIN_HTML_PATH = __dirname + '/public/login.html';
-const MAIN_HTML_PATH = __dirname + "/public/natural_mongo.html";
+const MAIN_HTML_PATH  = __dirname + "/public/natural_mongo.html";
 
 // This application uses express as its web server
 // for more info, see: http://expressjs.com
@@ -50,6 +46,7 @@ app.use(session({
 }));
 
 app.get('/', (req, res) =>{
+    "use strict";
     var session = req.session;
     if (session && session.login && session.dbList){
         sendHtml(MAIN_HTML_PATH, res);
@@ -63,6 +60,7 @@ app.use(express.static(__dirname + '/public'));
 
 // start server on the specified port and binding host
 app.listen(appEnv.port, '0.0.0.0', () =>{
+    "use strict";
     // print a message when the server starts listening
     console.log("server starting on " + appEnv.url);
 });
@@ -179,8 +177,6 @@ app.get('/logout', (req, res)=>{
     });
     sendHtml(LOGIN_HTML_PATH, res);
 });
-
-
 
 /**
  * Send a HTML to the client

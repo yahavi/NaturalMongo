@@ -16,7 +16,8 @@
 
     IP: <input type="text" title="ip" id="ip_input">
     (Required)<br>i.e: 159.122.221.134<br><br>
-    Port: <input type="number" title="port" id="port_input">
+    Port: <input type="number" title="port" id="port_input"
+                 min="0" max="65535" value="27017" placeholder="27017">
     (Optional, default: 27017)<br><br>
     Admin username: <input type="text" title="username" id="username_input">
     (Optional)<br>
@@ -24,14 +25,13 @@
     Admin password: <input type="text" title="password" id="password_input">
     (Optional)<br>
     i.e: alpha123<br><br>
-    Admin DB: <input type="text" title="DB" id="db_name_input">
+    Admin DB: <input type="text" title="DB" id="db_name_input"
+                     value="admin" placeholder="admin">
     (Optional, default: admin)<br>
     i.e: restaurants<br><br>
     <button id="login">Login</button><br>
     <p title="response" id="response_from_server"></p>
 <script>
-    const DEFAULT_PORT = 27017;
-    const DB_NAME = "admin";
     $(document).ready(function() {
 
         $("#login").click(function(){
@@ -42,8 +42,6 @@
             var dbName = $("#db_name_input").val();
 
             if (ip){
-                if (!port) port = DEFAULT_PORT;
-                if (!dbName) dbName = DB_NAME;
                 var login = new Login(ip, port, username, password, dbName);
                 $.ajax({
                     type: "POST",

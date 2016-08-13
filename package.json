@@ -1,16 +1,17 @@
 {
-	"name": "NodejsStarterApp",
+	"name": "NaturalMongo",
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
 		"start": "node app.js"
 	},
 	"dependencies": {
-		"express": "4.*",
-		"cfenv": "1.*",
-		"co": "*",
-		"express-session": "1.*",
-		"watson-developer-cloud": "2.*"
+		"express": "4.x",
+		"cfenv": "1.x",
+		"co": "4.x",
+		"express-session": "1.x",
+		"watson-developer-cloud": "2.x",
+		"mongodb": "2.x"
 	},
 	"repository": {},
 	"engines": {

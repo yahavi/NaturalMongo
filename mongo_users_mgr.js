@@ -1,17 +1,18 @@
 
 var NaturalMongoDefs = require('./natural_mongo_defs');
-var MongoClient = require('mongodb').MongoClient;
-var assert = require('assert');
-var co = require('co');
+var MongoClient      = require('mongodb').MongoClient;
+var assert           = require('assert');
+var co               = require('co');
 
 var SingleRequest = NaturalMongoDefs.SingleRequest;
-var SingleDb = NaturalMongoDefs.SingleDb;
+var SingleDb      = NaturalMongoDefs.SingleDb;
+var Role          = NaturalMongoDefs.Role;
 
 const ROLES = ['read', 'readWrite', 'dbAdmin', 'dbOwner', 'userAdmin'];
 
-const DB_NOT_FOUND = "Please mention the database name";
-const USER_NOT_FOUND = "Please mention the username";
-const ROLES_NOT_FOUND = "Please mention a role";
+const DB_NOT_FOUND    = "database name not found";
+const USER_NOT_FOUND  = "username not found";
+const ROLES_NOT_FOUND = "Please mention an appropriate role";
 
 module.exports = {
 
@@ -121,7 +122,10 @@ module.exports = {
         var splitSentence = sentence.split(" ");
 
         for (var iDb in dbList){
-            var currDb = dbList[iDb];
+            var currDb;
+            if (dbList.hasOwnProperty(iDb)){
+                currDb = dbList[iDb];
+            }
             var dbName = currDb["name"];
             if (-1 < splitSentence.indexOf(dbName)){
                 var username = "";
@@ -137,7 +141,11 @@ module.exports = {
                 }
 
                 for (var iUser in currDb["users"]){
-                    var currUser = currDb["users"][iUser];
+                    var currUser;
+                    if (currDb["users"].hasOwnProperty(iUser)){
+                        currUser = currDb["users"][iUser];
+                    }
+
                     if (-1 < splitSentence.indexOf(currUser.toLowerCase())){
                         username = currUser;
                         break;
@@ -166,7 +174,8 @@ var getUrl = function(login){
     "use strict";
     var userAndPass = (login.username && login.password) ?
     login.username + ":" + login.password + "@" : "";
-    return 'mongodb://' + userAndPass + login.ip + ":" + login.port + "/" + login.dbName;
+    return 'mongodb://' + userAndPass + login.ip + ":" +
+                          login.port + "/" + login.dbName;
 };
 
 var getSingleDb = function *(mongoSession, dbName, dbList){
@@ -182,15 +191,11 @@ var getSingleDb = function *(mongoSession, dbName, dbList){
         }
         var usersDump = yield currentDb.command({ usersInfo: 1 });
         for (var user in usersDump["users"]){
-            users.push(usersDump["users"][user]["user"]);
+            if (usersDump["users"].hasOwnProperty(user)){
+                users.push(usersDump["users"][user]["user"]);
+            }
         }
         dbList.push(new SingleDb(dbName, collections, users));
     });
 
-};
-
-var Role = function(roleName, dbName){
-    "use strict";
-    this.role = roleName;
-    this.db = dbName;
 };
