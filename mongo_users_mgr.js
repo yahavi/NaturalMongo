@@ -19,7 +19,7 @@ module.exports = {
     init : function *(login, session) {
         "use strict";
         var dbList = [];
-
+        console.log("login: " + JSON.stringify(login))
         var url = getUrl(login);
         var mongoSession;
         yield co(function*() {
@@ -57,7 +57,6 @@ module.exports = {
         var mongoSession;
         var url = getUrl(login);
         yield co(function*() {
-            console.log("Connecting to " + url + singleRequest.dbName);
             mongoSession = yield MongoClient.connect(url);
             var res = yield mongoSession.command({usersInfo:
                 {user: singleRequest.username, db: singleRequest.dbName}});
@@ -133,7 +132,7 @@ module.exports = {
                 for (var role in ROLES){
                     var roleName = ROLES[role].toLowerCase();
                     if (-1 < splitSentence.indexOf(roleName)){
-                        roles.push(new Role(ROLES[role], dbName)); // Use the role as is
+                        roles.push(new Role(ROLES[role], dbName));
                     }
                 }
                 if (!roles){

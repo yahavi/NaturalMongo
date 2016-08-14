@@ -12,8 +12,7 @@ var crypto           = require('crypto');
 // TODO - Train Watson better
 // TODO? - Grant - Verify that the role not there
 // TODO? - Revoke - Verify that the role is there
-// TODO - Upload to cloud
-// TODO - HTTPS
+// TODO? - TLS
 
 // Frontend:
 // TODO - Add more informative output. Arrange all in boxes? - Valeriya
@@ -22,7 +21,7 @@ var crypto           = require('crypto');
 // ==========================================
 
 
-const LOGIN_HTML_PATH = __dirname + '/public/login.html';
+const LOGIN_HTML_PATH = __dirname + '/public/index.html';
 const MAIN_HTML_PATH  = __dirname + "/public/natural_mongo.html";
 
 // This application uses express as its web server
@@ -59,7 +58,7 @@ app.get('/', (req, res) =>{
 app.use(express.static(__dirname + '/public'));
 
 // start server on the specified port and binding host
-app.listen(appEnv.port, '0.0.0.0', () =>{
+app.listen(appEnv.port, () =>{
     "use strict";
     // print a message when the server starts listening
     console.log("server starting on " + appEnv.url);

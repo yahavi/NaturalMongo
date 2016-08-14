@@ -17,13 +17,13 @@ module.exports = {
     REVOKE : "revoke",
     NOT_AN_ACTION : "not an action",
 
-    dummyClassify : function(sentence){
-        "use strict";
-        if (-1 < sentence.indexOf(this.REVOKE)){
-            return this.REVOKE;
-        }
-        return this.GRANT;
-    },
+    // dummyClassify : function(sentence){
+    //     "use strict";
+    //     if (-1 < sentence.indexOf(this.REVOKE)){
+    //         return this.REVOKE;
+    //     }
+    //     return this.GRANT;
+    // },
 
     classify : function (sentence, cbk) {
         nlc.classify({text: sentence, classifier_id: NLC_CLASSIFIER_ID},
