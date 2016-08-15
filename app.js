@@ -1,10 +1,14 @@
 
+var express          = require('express');
+var cfenv            = require('cfenv');
 var co               = require('co');
-var assert           = require('assert');
-var MongoUsersDriver = require('./mongo_users_mgr');
-var NLC              = require('./natural_language_classifier');
 var session          = require('express-session');
 var crypto           = require('crypto');
+var MongoUsersDriver = require('./mongo_users_mgr');
+var NLC              = require('./natural_language_classifier');
+
+const LOGIN_HTML_PATH = __dirname + '/public/login.html';
+const MAIN_HTML_PATH  = __dirname + "/public/natural_mongo.html";
 
 // ================ TODOs ===================
 // Backend:
@@ -13,24 +17,12 @@ var crypto           = require('crypto');
 // TODO? - Grant - Verify that the role not there
 // TODO? - Revoke - Verify that the role is there
 // TODO? - TLS
-
+//
 // Frontend:
 // TODO - Add more informative output. Arrange all in boxes? - Valeriya
 // TODO - CSS - Valeriya
 // TODO - Input checks for security
 // ==========================================
-
-
-const LOGIN_HTML_PATH = __dirname + '/public/index.html';
-const MAIN_HTML_PATH  = __dirname + "/public/natural_mongo.html";
-
-// This application uses express as its web server
-// for more info, see: http://expressjs.com
-var express = require('express');
-
-// cfenv provides access to your Cloud Foundry environment
-// for more info, see: https://www.npmjs.com/package/cfenv
-var cfenv = require('cfenv');
 
 // create a new express server
 var app = express();
@@ -38,15 +30,17 @@ var app = express();
 // get the app environment from Cloud Foundry
 var appEnv = cfenv.getAppEnv();
 
+// enable a session based connection
 app.use(session({
     secret: crypto.randomBytes(64).toString('hex'),
     saveUninitialized: false,
     resave: false
 }));
 
+// Receives a get request and return the HTML according to the user session
 app.get('/', (req, res) =>{
     "use strict";
-    var session = req.session;
+    var session = req["session"];
     if (session && session.login && session.dbList){
         sendHtml(MAIN_HTML_PATH, res);
     } else {
@@ -64,6 +58,7 @@ app.listen(appEnv.port, () =>{
     console.log("server starting on " + appEnv.url);
 });
 
+// login to the mongo server
 app.post('/login', (req, res) =>{
     "use strict";
     var body = '';
@@ -84,10 +79,10 @@ app.post('/login', (req, res) =>{
             console.log("Error caught! " + err);
             res.status(201).send("Error: " + err.message);
         })
-
     });
 });
 
+// identify the user request
 app.post('/ask', (req, res) =>{
     "use strict";
     var body = '';
@@ -131,6 +126,7 @@ app.post('/ask', (req, res) =>{
     });
 });
 
+// perform the required operation
 app.post('/perform', (req, res)=> {
     "use strict";
     var body = '';
@@ -167,9 +163,10 @@ app.post('/perform', (req, res)=> {
     });
 });
 
+// logout from server
 app.get('/logout', (req, res)=>{
     "use strict";
-    req.session.destroy(function(err) {
+    req["session"].destroy(function(err) {
         if (err){
             console.error(err);
         }

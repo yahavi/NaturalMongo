@@ -1,8 +1,8 @@
 
-var NaturalMongoDefs = require('./natural_mongo_defs');
 var MongoClient      = require('mongodb').MongoClient;
 var assert           = require('assert');
 var co               = require('co');
+var NaturalMongoDefs = require('./natural_mongo_defs');
 
 var SingleRequest = NaturalMongoDefs.SingleRequest;
 var SingleDb      = NaturalMongoDefs.SingleDb;
@@ -16,6 +16,11 @@ const ROLES_NOT_FOUND = "Please mention an appropriate role";
 
 module.exports = {
 
+    /**
+     * Get the login details and initialize the dbList
+     * @param login the login details
+     * @param session the session to initialize with dbList
+     */
     init : function *(login, session) {
         "use strict";
         var dbList = [];
@@ -37,7 +42,6 @@ module.exports = {
                     yield getSingleDb(mongoSession, dbDetails["name"], dbList);
                 }
             }
-
         }).then(()=>{
             console.log(dbList);
             session.dbList = dbList;
@@ -52,6 +56,11 @@ module.exports = {
 
     },
 
+    /**
+     * Put the user roles in singleRequest
+     * @param login the login details
+     * @param singleRequest the request
+     */
     showRoles : function *(login, singleRequest) {
         "use strict";
         var mongoSession;
@@ -71,6 +80,11 @@ module.exports = {
         });
     },
 
+    /**
+     * Grant a role to the requested user
+     * @param login the login details
+     * @param singleRequest the request
+     */
     grantRole : function *(login, singleRequest) {
         "use strict";
         var mongoSession;
@@ -92,6 +106,11 @@ module.exports = {
         });
     },
 
+    /**
+     * Revoke a role from the requested user
+     * @param login the login details
+     * @param singleRequest the request
+     */
     revokeRole : function *(login, singleRequest) {
         "use strict";
         var mongoSession;
@@ -113,6 +132,13 @@ module.exports = {
         });
     },
 
+    /**
+     * Synchronous function - Identify a request: Get a sentence and a dbList
+     * and return a singleRequest object
+     * @param sentence the sentence
+     * @param dbList the dbList
+     * @returns {module.exports.SingleRequest}
+     */
     identifyRequest : (sentence, dbList) => {
         "use strict";
         var roles = [];
@@ -169,6 +195,11 @@ module.exports = {
     }
 };
 
+/**
+ * Create a URL path from the login
+ * @param login - the login details
+ * @returns {string}
+ */
 var getUrl = function(login){
     "use strict";
     var userAndPass = (login.username && login.password) ?
@@ -177,6 +208,12 @@ var getUrl = function(login){
                           login.port + "/" + login.dbName;
 };
 
+/**
+ * Get a dbName and push a new SingleDb object to the dbList
+ * @param mongoSession - the mongo session
+ * @param dbName - the db name
+ * @param dbList - the db list
+ */
 var getSingleDb = function *(mongoSession, dbName, dbList){
     "use strict";
     yield co(function *() {
@@ -196,5 +233,4 @@ var getSingleDb = function *(mongoSession, dbName, dbList){
         }
         dbList.push(new SingleDb(dbName, collections, users));
     });
-
 };
