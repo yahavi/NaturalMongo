@@ -86,6 +86,12 @@ module.exports = {
 
     /**
      * Grant a role to the requested user
+     * Roles types:
+     * DB scope (Roles): read, readWrite, dbAdmin, dbOwner, userAdmin
+     * Collection scope (Privileges): read, readWrite
+     * Logic: If collection name was mentioned, grant only roles to the
+     * specific collection, i.e the privileged. Otherwise, grant roles to
+     * the database scope.
      * @param login the login details
      * @param singleRequest the request
      */
@@ -100,7 +106,8 @@ module.exports = {
             mongoSession = yield MongoClient.connect(url);
             mongoSession = mongoSession.db(dbName);
             var role = singleRequest.role;
-            if (role.role.role === "read" || role.role.role ==="readWrite"){
+            if (collectionName &&
+                (role.role.role === "read" || role.role.role ==="readWrite")){
                 yield createRole(mongoSession, role, dbName, collectionName);
             }
             yield mongoSession.command(
@@ -116,7 +123,13 @@ module.exports = {
     },
 
     /**
-     * Revoke a role from the requested user
+     * Revoke a role from the requested user.
+     * Roles types:
+     * DB scope (Roles): read, readWrite, dbAdmin, dbOwner, userAdmin
+     * Collection scope (Privileges): read, readWrite
+     * Logic: If collection name was mentioned, revoke only roles of the
+     * specific collection, i.e the privileged. Otherwise, revoke roles from
+     * the database scope.
      * @param login the login details
      * @param singleRequest the request
      */
@@ -131,16 +144,16 @@ module.exports = {
             mongoSession = yield MongoClient.connect(url);
             mongoSession = mongoSession.db(dbName);
             var role = singleRequest.role;
-            var isCustomRole =
-                role.role.role === "read" || role.role.role ==="readWrite";
+            var roleName = role.role.role;
+            var isCustomRole = collectionName &&
+                (roleName === "read" || roleName ==="readWrite");
             if (isCustomRole) {
-                var customRoleName = getRoleName(role.role, collectionName);
+                var customRoleName = getRoleName(roleName, collectionName);
                 var customRole = {role: customRoleName, db: dbName};
                 var roleInfo = yield mongoSession.command({
                     rolesInfo: customRoleName
                 });
                 if (roleInfo.roles) {
-                    console.log("Role " + customRoleName + " exists, revoking");
                     yield mongoSession.command(
                         {
                             revokeRolesFromUser: singleRequest.username,
@@ -153,8 +166,6 @@ module.exports = {
                     {revokeRolesFromUser: singleRequest.username,
                                    roles: [singleRequest.role]});
             }
-
-
         }).then(()=>{
             mongoSession.close();
         }).catch((err)=>{
@@ -177,16 +188,21 @@ module.exports = {
         var msg = "";
         sentence = sentence.toLowerCase();
         var splitSentence = sentence.split(" ");
-
+        console.log("Split " + splitSentence);
         for (var iDb in dbList){
             var currDb;
             if (dbList.hasOwnProperty(iDb)){
                 currDb = dbList[iDb];
             }
             var dbName = currDb["name"];
-            if (-1 < splitSentence.indexOf(dbName)){
+            var indexOfDb = splitSentence.indexOf(dbName);
+            if (-1 < indexOfDb){
                 var username = "";
                 var collectionName = "";
+
+                // Handle cases of same db and collection names
+                splitSentence.splice(indexOfDb, 1);
+
                 for (var iRole in ROLES){
                     var roleName = ROLES[iRole].toLowerCase();
                     if (-1 < splitSentence.indexOf(roleName)){
@@ -210,15 +226,16 @@ module.exports = {
                     }
                 }
                 if (!username){
-                    return new SingleRequest(USER_NOT_FOUND, dbName,
-                                             collectionName, undefined, role);
+                    msg = USER_NOT_FOUND;
                 }
 
                 for (var iCollection in currDb["collections"]){
-                    var currCollection = currDb["collections"][iCollection];
-                    if (-1 < sentence.indexOf(currCollection)){
-                        collectionName = currCollection;
-                        break;
+                    if (currDb["collections"].hasOwnProperty(iCollection)){
+                        var currCollection = currDb["collections"][iCollection];
+                        if (-1 < sentence.indexOf(currCollection)){
+                            collectionName = currCollection;
+                            break;
+                        }
                     }
                 }
                 return new SingleRequest(msg, dbName, collectionName,
@@ -226,7 +243,6 @@ module.exports = {
             }
         }
         return new SingleRequest(DB_NOT_FOUND);
-
     }
 };
 
@@ -235,7 +251,7 @@ module.exports = {
  * @param login - the login details
  * @returns {string}
  */
-var getUrl = function(login){
+var getUrl = (login) => {
     "use strict";
     var userAndPass = (login.username && login.password) ?
     login.username + ":" + login.password + "@" : "";
@@ -271,21 +287,31 @@ var getSingleDb = function *(mongoSession, dbName, dbList){
     });
 };
 
+/**
+ * Create a custom role.
+ * Assumptions:
+ *   All parameters supplied and the base role is 'read' or 'readWrite'.
+ * @param mongoSession the mongo session
+ * @param role the role
+ * @param dbName the db name
+ * @param collectionName the collection name
+ */
 var createRole = function * (mongoSession, role, dbName, collectionName){
-    var actions = role.role == "read" ? READ_ACTIONS : READ_WRITE_ACTIONS;
-    role.role = getRoleName(role.role, collectionName);
+    var roleName = role.role;
+    var actions = roleName == "read" ? READ_ACTIONS : READ_WRITE_ACTIONS;
+    var customRoleName = getRoleName(roleName, collectionName);
     yield co(function*() {
         // Check whether the role exists
         var roleInfo = yield mongoSession.command({
-            rolesInfo:  role.role
+            rolesInfo:  customRoleName
         });
         if (!roleInfo.roles){ // Role does not exists
-            console.log("Creating role " + role.role);
+            console.log("Creating role " + customRoleName);
             yield mongoSession.command(
-                {createRole: role.role,
-                    privileges: [{resource: {db: dbName, collection: collectionName},
-                    actions: actions}],
-                    roles: []});
+                {createRole: customRoleName,
+                 privileges: [{resource: {db: dbName, collection: collectionName},
+                 actions: actions}],
+                 roles: []});
         }
 
     }).catch((err)=>{
@@ -295,10 +321,17 @@ var createRole = function * (mongoSession, role, dbName, collectionName){
     });
 };
 
-var getRoleName = function(role, collection){
+/**
+ * Return role name
+ * @param baseRoleName the role name (read, readWrite, dbAdmin, etc.)
+ * @param collectionName the collection name
+ * @returns {string} <baseRoleName>:<collectionName>
+ */
+var getRoleName = (baseRoleName, collectionName) => {
     "use strict";
-    if (!role){
-        console.error("role is " + role + "!");
+    if (!baseRoleName){
+        console.error("role is " + baseRoleName + "!");
     }
-    return role + ":" + collection;
+    console.log("The role name is: " + baseRoleName + ":" + collectionName);
+    return baseRoleName + ":" + collectionName;
 };
