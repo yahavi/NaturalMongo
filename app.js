@@ -6,22 +6,20 @@ var session          = require('express-session');
 var crypto           = require('crypto');
 var MongoUsersDriver = require('./mongo_users_mgr');
 var NLC              = require('./natural_language_classifier');
+var NaturalMongoDefs = require('./natural_mongo_defs');
 
 const LOGIN_HTML_PATH = __dirname + '/public/login.html';
 const MAIN_HTML_PATH  = __dirname + "/public/natural_mongo.html";
 
 // ================ TODOs ===================
 // Backend:
-// TODO - Add roles to a collection, e.g. privileges
 // TODO - Train Watson better
-// TODO? - Grant - Verify that the role not there
-// TODO? - Revoke - Verify that the role is there
-// TODO? - TLS
+// TODO - Create a database with different dbName and collectionName
 //
 // Frontend:
 // TODO - Add more informative output. Arrange all in boxes? - Valeriya
 // TODO - CSS - Valeriya
-// TODO - Input checks for security
+// TODO - Improve security
 // ==========================================
 
 // create a new express server
@@ -99,6 +97,7 @@ app.post('/ask', (req, res) =>{
             status = 200;
             singleRequest =
                 MongoUsersDriver.identifyRequest(body, session.dbList);
+            console.log("SingleRequest: " + JSON.stringify(singleRequest));
             if (singleRequest.dbName && singleRequest.username){
                 yield MongoUsersDriver.showRoles(session.login, singleRequest);
             }
@@ -143,11 +142,11 @@ app.post('/perform', (req, res)=> {
         var session = req.session;
         co(function*() {
             switch (singleRequest.action) {
-                case NLC.GRANT:
+                case NaturalMongoDefs.GRANT:
                     yield MongoUsersDriver.grantRole(session.login,
                                                      singleRequest);
                     break;
-                case NLC.REVOKE:
+                case NaturalMongoDefs.REVOKE:
                     yield MongoUsersDriver.revokeRole(session.login,
                                                       singleRequest);
                     break;

@@ -55,5 +55,4 @@ var parseAction = function(actionString){
         default:
             return NaturalMongoDefs.NOT_AN_ACTION;
     }
-
 };
