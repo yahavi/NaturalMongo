@@ -6,9 +6,13 @@ To identify the request characteristic (i.e. grant or revoke) we are using [IBM-
 
 ## Login
 *IP*: Obligatory.
+
 *Port*: Optional. Default: 27017.
+
 *Admin username*: Optional. The username of the DB admin or the root user.
+
 *Admin password*: Optional. The password of the DB admin or the root user.
+
 *Admin DB*: The admin's database. If the admin is root, that db may be 'admin'. Default: admin.
 
 **Notice**: Make sure to have the right permissions to perform grant/revoke operations on your database
@@ -35,4 +39,4 @@ https://docs.mongodb.com/manual/reference/built-in-roles/
 * ...delete anna88 readWrite permission from db managers and collection tasks...
 
 #### Licence: MIT
-#### Authors: Yahav Itzhak and Valeriya Zelikovich
+#### Authors: [Yahav Itzhak](https://github.com/yahavi) and [Valeriya Zelikovich](https://github.com/valeriyaz)
