@@ -15,7 +15,7 @@ To identify the request characteristic (i.e. grant or revoke) we are using [IBM-
 
 *Admin DB*: The admin's database. If the admin is root, that db may be 'admin'. Default: admin.
 
-**Notice**: Make sure to have the right permissions to perform grant/revoke operations on your database
+**Notice**: Make sure to have the right permissions to perform grant/revoke operations on your database.
 
 ## Roles
 * **read** - Can be applied on *databases* and *collections*.
@@ -25,9 +25,7 @@ To identify the request characteristic (i.e. grant or revoke) we are using [IBM-
 * **userAdmin** - Can be applied on *databases* only.
 
 ## Roles actions
-All actions are same as detailed in MongoDB documentation:
-https://docs.mongodb.com/manual/reference/built-in-roles/
-
+All actions are same as detailed in MongoDB documentation [Database-User-Roles](https://docs.mongodb.com/manual/reference/built-in-roles/#database-user-roles) and [Database-Administration-Roles](https://docs.mongodb.com/manual/reference/built-in-roles/#database-administration-roles).
 ## Usage
 1. Enter the login details and connect by the "login" button.
 2. Enter your request.

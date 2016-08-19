@@ -188,7 +188,6 @@ module.exports = {
         var msg = "";
         sentence = sentence.toLowerCase();
         var splitSentence = sentence.split(" ");
-        console.log("Split " + splitSentence);
         for (var iDb in dbList){
             var currDb;
             if (dbList.hasOwnProperty(iDb)){
