@@ -15,13 +15,17 @@ var nlc = watson["natural_language_classifier"]({
 
 module.exports = {
 
-    // dummyClassify : function(sentence){
-    //     "use strict";
-    //     if (-1 < sentence.indexOf(this.REVOKE)){
-    //         return this.REVOKE;
-    //     }
-    //     return this.GRANT;
-    // },
+    dummyclassify : function (sentence, cbk) {
+        "use strict";
+        var action;
+        if (-1 < sentence.indexOf(NaturalMongoDefs.REVOKE)){
+            action = NaturalMongoDefs.REVOKE;
+        } else {
+            action = NaturalMongoDefs.GRANT;
+        }
+
+        cbk(null, action);
+    },
 
     /**
      * Get a sentence and classify it to Grant or Revoke
@@ -34,6 +38,7 @@ module.exports = {
             (err, response) => {
                "use strict";
                 var action = parseAction(response["top_class"]);
+
                 cbk(err, action);
             }
         );

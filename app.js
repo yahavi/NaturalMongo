@@ -14,12 +14,10 @@ const MAIN_HTML_PATH  = __dirname + "/public/natural_mongo.html";
 // ================ TODOs ===================
 // Backend:
 // TODO - Train Watson better
-// TODO - Create a database with different dbName and collectionName
 //
 // Frontend:
 // TODO - Add more informative output. Arrange all in boxes? - Valeriya
 // TODO - CSS - Valeriya
-// TODO - Improve security
 // ==========================================
 
 // create a new express server
@@ -115,6 +113,7 @@ app.post('/ask', (req, res) =>{
                         res.status(status).json(singleRequest);
                     }
                 });
+
             } else {
                 res.status(status).json(singleRequest);
             }

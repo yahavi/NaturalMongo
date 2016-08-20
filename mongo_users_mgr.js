@@ -12,10 +12,9 @@ const ROLES = ['read', 'readWrite', 'dbAdmin', 'dbOwner', 'userAdmin'];
 
 const READ_ACTIONS = ['collStats', 'dbHash', 'dbStats', 'find', 'killCursors',
                       'listIndexes', 'listCollections'];
-const READ_WRITE_ACTIONS = READ_ACTIONS + ['convertToCapped',
+const READ_WRITE_ACTIONS = READ_ACTIONS.concat(['convertToCapped',
         'createCollection', 'dropCollection', 'createIndex', 'dropIndex',
-        'emptycapped', 'insert', 'remove', 'renameCollectionSameDB', 'update'];
-
+        'emptycapped', 'insert', 'remove', 'renameCollectionSameDB', 'update']);
 
 const DB_NOT_FOUND    = "database name not found";
 const USER_NOT_FOUND  = "username not found";
@@ -106,9 +105,11 @@ module.exports = {
             mongoSession = yield MongoClient.connect(url);
             mongoSession = mongoSession.db(dbName);
             var role = singleRequest.role;
+            var roleName = role.role;
             if (collectionName &&
-                (role.role.role === "read" || role.role.role ==="readWrite")){
+                (roleName === "read" || roleName ==="readWrite")){
                 yield createRole(mongoSession, role, dbName, collectionName);
+                console.log("+++role: " + JSON.stringify(role));
             }
             yield mongoSession.command(
                 {grantRolesToUser: singleRequest.username,
@@ -144,7 +145,7 @@ module.exports = {
             mongoSession = yield MongoClient.connect(url);
             mongoSession = mongoSession.db(dbName);
             var role = singleRequest.role;
-            var roleName = role.role.role;
+            var roleName = role.role;
             var isCustomRole = collectionName &&
                 (roleName === "read" || roleName ==="readWrite");
             if (isCustomRole) {
@@ -231,7 +232,7 @@ module.exports = {
                 for (var iCollection in currDb["collections"]){
                     if (currDb["collections"].hasOwnProperty(iCollection)){
                         var currCollection = currDb["collections"][iCollection];
-                        if (-1 < sentence.indexOf(currCollection)){
+                        if (-1 < splitSentence.indexOf(currCollection)){
                             collectionName = currCollection;
                             break;
                         }
@@ -298,13 +299,13 @@ var getSingleDb = function *(mongoSession, dbName, dbList){
 var createRole = function * (mongoSession, role, dbName, collectionName){
     var roleName = role.role;
     var actions = roleName == "read" ? READ_ACTIONS : READ_WRITE_ACTIONS;
-    var customRoleName = getRoleName(roleName, collectionName);
+    var customRoleName = role.role = getRoleName(roleName, collectionName);
     yield co(function*() {
         // Check whether the role exists
         var roleInfo = yield mongoSession.command({
             rolesInfo:  customRoleName
         });
-        if (!roleInfo.roles){ // Role does not exists
+        if (0 == roleInfo.roles.length){ // Role does not exists
             console.log("Creating role " + customRoleName);
             yield mongoSession.command(
                 {createRole: customRoleName,
@@ -312,7 +313,6 @@ var createRole = function * (mongoSession, role, dbName, collectionName){
                  actions: actions}],
                  roles: []});
         }
-
     }).catch((err)=>{
         console.error(err.stack);
         if (mongoSession) mongoSession.close();
