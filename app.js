@@ -107,7 +107,7 @@ app.post('/ask', (req, res) =>{
                 NLC.classify(body, (err, response)=> {
                     if (err){
                         status = 201;
-                        res.status(status).send("Error: " + err.message);
+                        res.status(status).send("Watson server error: " + err.message);
                     } else {
                         singleRequest.action = response;
                         res.status(status).json(singleRequest);
