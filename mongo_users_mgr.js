@@ -16,8 +16,9 @@ const READ_WRITE_ACTIONS = READ_ACTIONS.concat(['convertToCapped',
         'createCollection', 'dropCollection', 'createIndex', 'dropIndex',
         'emptycapped', 'insert', 'remove', 'renameCollectionSameDB', 'update']);
 
-const DB_NOT_FOUND    = "database name not found";
-const USER_NOT_FOUND  = "username not found";
+const DB_NOT_FOUND    = "Database name not found";
+const COLLECTION_NOT_FOUND  = "Collection not found";
+const USER_NOT_FOUND  = "Username not found";
 const ROLES_NOT_FOUND = "Please mention an appropriate role";
 
 module.exports = {
@@ -228,7 +229,6 @@ module.exports = {
                 if (!username){
                     msg = USER_NOT_FOUND;
                 }
-
                 for (var iCollection in currDb["collections"]){
                     if (currDb["collections"].hasOwnProperty(iCollection)){
                         var currCollection = currDb["collections"][iCollection];
@@ -237,6 +237,10 @@ module.exports = {
                             break;
                         }
                     }
+                }
+
+                if(splitSentence.indexOf("collection") > -1 && (!collectionName)){
+                    msg = COLLECTION_NOT_FOUND;
                 }
                 return new SingleRequest(msg, dbName, collectionName,
                                          username, role);

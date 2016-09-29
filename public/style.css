@@ -1,20 +1,90 @@
 body {
-    background-color: #C3E4ED;
-    font-family: "Comic Sans MS";
+    background-color: #EFEFEF;
+    font-family: "Calisto MT", "Bookman Old Style", Bookman, "Goudy Old Style", Garamond, "Hoefler Text", "Bitstream Charter", Georgia, serif;";
 }
 
 h1 {
-
-    color: #388E8E;
-    margin-left: 20px;
+    padding-top: 20px;
+    color: #6aaf4e;
+    margin-right: 360px;
 }
 h2{
     font-size: 28px;
 }
 
+#login{
+    margin-left: 130px;
+}
+
+.myButton {
+    -moz-box-shadow: 3px 4px 0px 0px #899599;
+    -webkit-box-shadow: 3px 4px 0px 0px #899599;
+    box-shadow: 3px 4px 0px 0px #899599;
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #bab1ba));
+    background:-moz-linear-gradient(top, #ededed 5%, #bab1ba 100%);
+    background:-webkit-linear-gradient(top, #ededed 5%, #bab1ba 100%);
+    background:-o-linear-gradient(top, #ededed 5%, #bab1ba 100%);
+    background:-ms-linear-gradient(top, #ededed 5%, #bab1ba 100%);
+    background:linear-gradient(to bottom, #ededed 5%, #bab1ba 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#bab1ba',GradientType=0);
+    background-color:#ededed;
+    -moz-border-radius:15px;
+    -webkit-border-radius:15px;
+    border-radius:15px;
+    border:1px solid #d6bcd6;
+    display:inline-block;
+    cursor:pointer;
+    color:green;
+    font-family:Arial;
+    font-size:17px;
+    padding:7px 25px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #e1e2ed;
+}
+.myButton:hover {
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #bab1ba), color-stop(1, #ededed));
+    background:-moz-linear-gradient(top, #bab1ba 5%, #ededed 100%);
+    background:-webkit-linear-gradient(top, #bab1ba 5%, #ededed 100%);
+    background:-o-linear-gradient(top, #bab1ba 5%, #ededed 100%);
+    background:-ms-linear-gradient(top, #bab1ba 5%, #ededed 100%);
+    background:linear-gradient(to bottom, #bab1ba 5%, #ededed 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#bab1ba', endColorstr='#ededed',GradientType=0);
+    background-color:#bab1ba;
+}
+.myButton:active {
+    position:relative;
+    top:1px;
+}
+
+
+
+#wrapper {
+    width: 1000px;
+    margin-left: 166px;
+   <!-- border: 1px solid black; -->
+    overflow: hidden; /* so the size of the wrapper is alway the size of the longest content */
+}
+#first {
+    float: left;
+    width: 400px;
+    height: 450px;
+    border: 4px solid green;
+    border-radius: 20px;
+    padding-left: 20px;
+    background-color: #6aaf4e;
+}
+#second {
+    background-color: #6aaf4e;
+    padding-left: 20px;
+    border: 4px solid green;
+    border-radius: 20px;
+    height: 450px;
+    margin: 0 0 0 600px; /* considering the border you need to use a margin so the content does not float under the first div*/
+}
+
 .header{
     width: inherit;
-    height: 80px;
+    height: 100px;
     text-align: center;
     font-size: 25px;
 }
@@ -38,6 +108,10 @@ input {
     border-radius: 10px;
 }
 
+.sentence_input{
+    width: 600px;
+}
+
 #log{
     width: 600px;
     height: 100px;
@@ -46,7 +120,24 @@ input {
     font-size: 18px;
     overflow-y: scroll;
     resize: none;
+    margin-top: 20px;
 
 }
 
+#main_icon{
+
+    width: auto;
+    height: inherit;
+    float: left;
+    margin-left:300px;
+
+}
+
+.first_input{
+    margin-top: 25px;
+}
+label{
+    color: white;
+    font-weight: bold;
+}
 

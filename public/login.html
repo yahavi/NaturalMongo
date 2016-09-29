@@ -7,29 +7,46 @@
     <meta http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="modal_style.css">
     <script src="//code.jquery.com/jquery-latest.min.js"
             type="text/javascript"></script>
 </head>
 
 <body>
 
-    IP: <input type="text" title="ip" id="ip_input">
-    (Required)<br>i.e: 159.122.221.134<br><br>
-    Port: <input type="number" title="port" id="port_input"
-                 min="0" max="65535" value="27017" placeholder="27017">
-    (Optional, default: 27017)<br><br>
-    Admin username: <input type="text" title="username" id="username_input">
-    (Optional)<br>
-    i.e: alpha<br><br>
-    Admin password: <input type="text" title="password" id="password_input">
-    (Optional)<br>
-    i.e: alpha123<br><br>
-    Admin DB: <input type="text" title="DB" id="db_name_input"
-                     value="admin" placeholder="admin">
-    (Optional, default: admin)<br>
-    i.e: restaurants<br><br>
-    <button id="login">Login</button><br>
-    <p title="response" id="response_from_server"></p>
+    <div id="header" class="header">
+        <img id="main_icon" src="images/novelty-template-search.jpg">
+        <h1> Natural Mongo </h1>
+
+    </div>
+    <hr>
+
+    <div id="wrapper">
+        <div id="first">
+            <label><u>IP: </u></label><input id="ip_input" class="first_input" type="text" title="ip" >
+            <p>(Required)<br>i.e: 159.122.221.134 </p><br><br>
+            <label><u>Port: </u></label><input type="number" title="port" id="port_input"
+                         min="0" max="65535" value="27017" placeholder="27017">
+            <p>(Optional, default: 27017)</p><br><br>
+        </div>
+        <div id="second">
+            <label><u>Admin username:  </u></label>  <input id="username_input" class="first_input" type="text" title="username" >
+            (Optional)<br>
+            i.e: alpha<br><br>
+            <label><u>Admin password:  </u></label>  <input type="password" title="password" id="password_input">
+            (Optional)<br>
+            i.e: alpha123<br><br>
+            <label><u>Admin DB:</u></label> <input type="text" title="DB" id="db_name_input"
+                             value="admin" placeholder="admin">
+            (Optional, default: admin)<br>
+            i.e: restaurants<br><br>
+            <button id="login" class="myButton">Login</button><br>
+            <p title="response" id="response_from_server" style="color:red"></p>
+        </div>
+    </div>
+
+
+
 <script>
     $(document).ready(function() {
 

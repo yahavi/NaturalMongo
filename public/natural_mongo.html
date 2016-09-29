@@ -7,21 +7,62 @@
     <meta http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="modal_style.css">
     <script src="//code.jquery.com/jquery-latest.min.js"
             type="text/javascript"></script>
 
 </head>
 
 <body>
+
+<div id="header" class="header">
+    <img id="main_icon" src="images/novelty-template-search.jpg">
+    <h1> Natural Mongo </h1>
+
+</div>
+<hr>
+
 <div id="current_game">
     <h2 id="current_game_name"></h2>
     <!--The input of the player-->
-    <input type="text" title="sentence_input" id="sentence_input"><br>
+    <input id="sentence_input" class="sentence_input" type="text" title="sentence_input" ><br>
     <!--Send the sentence to the server button-->
-    <button id="send_button" class="main_button">Send</button><br>
+    <p id="example_input">(i.e. give user Yahav read permission on db restaurants collection customers)</p>
+    <br>
+    <span id="notice" style="color: red">Please notice : </span>
+    <span> roles you can give to user are : read, readWrite, dbAdmin, dbOwner, userAdmin </span>
+    <br>
+    <br>
+    <button id="send_button" class="myButton" style='margin-bottom: 10px'>Send</button><br>
+
     <!--A log that shows all news from the server-->
-    <textarea id="log" title="log" readonly="readonly"></textarea><br>
-    <button id="logout_button" class="main_button">Log out</button><br>
+    <!-- <textarea id="log" title="log" readonly="readonly"></textarea><br> -->
+    <button id="logout_button" class="myButton">Log out</button><br>
+
+    <!--<button id="myBtn">Open Modal</button> -->
+
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div id="modal-header" class="modal-header">
+                <span class="close">×</span>
+                <h2 id="modal_header">Modal Header</h2>
+            </div>
+            <div class="modal-body">
+                <p id="msg_show">Some text in the Modal Body</p>
+
+            </div>
+            <!--
+            <div class="modal-footer">
+                <h3>Modal Footer</h3>
+            </div>
+            -->
+        </div>
+
+    </div>
 </div>
 <script>
 
@@ -34,7 +75,11 @@
             if (sentence !== "") {
                 ask(sentence);
             }
-            sentenceInput.val('');
+            else{
+                //
+            }
+
+            //sentenceInput.val('');
         });
 
         var ask = function(sentence){
@@ -46,11 +91,35 @@
                 dataType: 'json',
                 data: sentence,
                 complete: function (data) {
-                    log.text(log.val() + data.responseText + "\n");
-                    if (200 == data.status){
-                        if (confirm(data.responseText)){ // pop up window
-                            perform(data.responseText);
+                    //log.text(log.val() + data.responseText + "\n");
+                    //get error message or done
+                    //console.log("data text: "+ data.res.msg);
+                    var first_msg = data.responseText.split(",")[0];
+                    var msg = first_msg.split(":")[1];
+                    console.log("resp text: " + msg);
+                    //no error
+                    if(msg.length === 2){
+                        console.log("Empty!");
+                        document.getElementById('modal-header').style.backgroundColor = "#6aaf4e";
+                        document.getElementById('modal_header').innerHTML = "Success";
+                        msg = "Done! Action: " + sentence;
+                        $('#sentence_input').val('');
+                    }
+                    //with error
+                    else{
+                        msg = msg.substring(1, msg.length - 1);
+                        if(msg == "Username not found" && (data.responseText.indexOf("dbName")!= -1)){
+                            var db_name =  data.responseText.split(",")[1];
+                            db_name = db_name.split(":")[1];
+                            msg =  msg +" " + "on db: "+  db_name;
                         }
+                        document.getElementById('modal-header').style.backgroundColor = "red";
+                        document.getElementById('modal_header').innerHTML = "Fail";
+                    }
+                    document.getElementById('msg_show').innerHTML  = msg;
+                    modal.style.display = "block";
+                    if (200 == data.status){
+
 
                     } else if (201 == data.status){
 
@@ -68,7 +137,7 @@
                 data: sentence,
                 complete: function (data) {
                     console.log(data)
-                    log.text(log.val() + data.responseText + "\n");
+                    //log.text(log.val() + data.responseText + "\n");
                     if (200 == data.status){
 
                     } else if (201 == data.status){
@@ -95,6 +164,32 @@
         });
 
     }); // $(document).ready
+
+    // Get the modal
+    var modal = document.getElementById('myModal');
+
+    // Get the button that opens the modal
+    var btn = document.getElementById("myBtn");
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks the button, open the modal
+//    btn.onclick = function() {
+//        modal.style.display = "block";
+//    }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
 
 </script>
 </body>
