@@ -1,56 +1,38 @@
-let john be the clusterAdmin on db restaurants,grant
-grant jonny readWrite permission on db restaurants and collection restaurants,grant
-give john permission to read on db restaurants,grant
-please permit jack to be the userAdmin of db criminals,grant
-allow danny to be the hostManager,grant
-authorize dean to backup db office collection pens,grant
-approve yossi to read from dyes,grant
-accredit benny to do restores on cars,grant
-"readAnyDatabase permission to username tzvi123, db computers",grant
-hostManager to anakin on db spaceships,grant
-certify xyxyxy13 to be the readAnyDatabase man on db stars,grant
-commission yoda to be the userAdmin on jedies,grant
-enable picaso to write on paintings,grant
-endorse god to be the root of world,grant
-license king_33 with clusterManager in rome,grant
-give okay to reads to moshe in db covenant,grant
-write woody in readwrite permission list in writers db,grant
-set adam a read permission in db heaven and collection snakes,grant
-deny asdad223 from read in db adsdasd,revoke
-revoke all danny56 permissions from database yuval collection grass,revoke
-disallow amir to readWrite in db songs,revoke
-prevent lior from dbOwner in db nonesense,revoke
-unauthorize clusterAdmin permission from eyal in db machines,revoke
-abolish yahav userAdminAnyDatabase permissions,revoke
-abrogate nissim dbOwner in db nissims,revoke
-cut off read permission from ori in db cheaters,revoke
-cut out read permission from ori in db cheaters,revoke
-void write permission from ilan at db trees and collection leaves,revoke
-wipe out admin permissions from elli in db pirates,revoke
-dismantle roy permission on x db,revoke
-dismiss guy from backup group in db mycloud,revoke
-terminate arnold permissions on terminator db
-nullify restore permission to arik in farms db collection cows,revoke
-quash read from yair22 in army db,revoke
-remove groot from root users in db galaxy,revoke
-renounce mouse39d from dbadmin in cats db,revoke
-"repel sol from db planets, permission hostManager",revoke
-rescind x from db y perm read,revoke
-delete write permissions from fred in db books,revoke
-remove dbowner permission from dbmaster in db dbs,revoke
-i want to negate read permission from edi67 in all dbs,revoke
-please obliterate write permission from db gonzol,revoke
-erase assy restore permissions from db people,revoke
-get rid of ha1m permissions in db life,revoke
-show jesus permission in db israel,show
-see adam permission in all dbs,show
-look at dana permission in raanana db,show
-dump ahron permission on sinay,show
-shai permissions,show
-george1 perms in db georgia and collection svaneti,show
-display ron permissions in db bees,show
-parade joy3 permissions in db fun,show
-present bibi permission in db mosad,show
-expose girl33 in db club,show
-view daash24 permissions in db syria,show
-disclose iftah permission on db keys collection doors,show
+grant x y,grant
+let x y,grant
+give x y,grant
+allow x y,grant
+authorize x y,grant
+approve x y,grant
+accredit x y,grant
+certify x y,grant
+commission x y,grant
+enable x y,grant
+endorse x y,grant
+license x y,grant
+okay x y,grant
+set x y,grant
+revoke x y,revoke
+deny x y,revoke
+disallow x y,revoke
+prevent x y,revoke
+unauthorize x y,revoke
+abolish x y,revoke
+abrogate x y,revoke
+cut x y,revoke
+void x y,revoke
+wipe x y,revoke
+dismantle x y,revoke
+dismiss x y,revoke
+terminate x y,revoke
+nullify x y,revoke
+quash x y,revoke
+remove x y,revoke
+renounce x y,revoke
+repel x y,revoke
+rescind x y,revoke
+delete x y,revoke
+negate x y,revoke
+obliterate x y,revoke
+erase x y,revoke
+rid x y,revoke
