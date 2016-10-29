@@ -39,10 +39,10 @@ module.exports = {
             mongoSession = yield MongoClient.connect(url);
             console.log("Connected correctly to server");
             var adminDb = mongoSession.admin();
-            var dbs = yield adminDb.listDatabases();
-            if (login.db){
-                yield getSingleDb(mongoSession, login.db, dbList);
+            if (login.dbName && login.dbName !== "admin"){
+                yield getSingleDb(mongoSession, login.dbName, dbList);
             } else {
+                var dbs = yield adminDb.listDatabases();
                 for (var dbDetails of yield dbs["databases"]){
                     yield getSingleDb(mongoSession, dbDetails["name"], dbList);
                 }
@@ -112,6 +112,7 @@ module.exports = {
                 yield createRole(mongoSession, role, dbName, collectionName);
                 console.log("+++role: " + JSON.stringify(role));
             }
+
             yield mongoSession.command(
                 {grantRolesToUser: singleRequest.username,
                  roles: [role]});

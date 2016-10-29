@@ -97,33 +97,22 @@
                     var first_msg = data.responseText.split(",")[0];
                     var msg = first_msg.split(":")[1];
                     console.log("resp text: " + msg);
-                    //no error
-                    if(msg.length === 2){
-                        console.log("Empty!");
-                        document.getElementById('modal-header').style.backgroundColor = "#6aaf4e";
-                        document.getElementById('modal_header').innerHTML = "Success";
-                        msg = "Done! Action: " + sentence;
-                        $('#sentence_input').val('');
-                    }
-                    //with error
-                    else{
+                    if (200 == data.status){
+                        perform(data.responseText);
+                    } else {
                         msg = msg.substring(1, msg.length - 1);
                         if(msg == "Username not found" && (data.responseText.indexOf("dbName")!= -1)){
                             var db_name =  data.responseText.split(",")[1];
                             db_name = db_name.split(":")[1];
-                            msg =  msg +" " + "on db: "+  db_name;
+                            msg =  msg + " " + "on db: "+  db_name;
                         }
                         document.getElementById('modal-header').style.backgroundColor = "red";
                         document.getElementById('modal_header').innerHTML = "Fail";
+                        document.getElementById('msg_show').innerHTML  = msg;
+                        modal.style.display = "block";
                     }
-                    document.getElementById('msg_show').innerHTML  = msg;
-                    modal.style.display = "block";
-                    if (200 == data.status){
 
 
-                    } else if (201 == data.status){
-
-                    }
                 }
             });
         };
@@ -136,13 +125,17 @@
                 dataType: 'json',
                 data: sentence,
                 complete: function (data) {
-                    console.log(data)
-                    //log.text(log.val() + data.responseText + "\n");
                     if (200 == data.status){
+                        document.getElementById('modal-header').style.backgroundColor = "#6aaf4e";
+                        document.getElementById('modal_header').innerHTML = "Success";
+                        $('#sentence_input').val('');
 
                     } else if (201 == data.status){
-
+                        document.getElementById('modal-header').style.backgroundColor = "red";
+                        document.getElementById('modal_header').innerHTML = "Fail";
                     }
+                    document.getElementById('msg_show').innerHTML = data.responseText.trim();
+                    modal.style.display = "block";
                 }
             });
         };
