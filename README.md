@@ -38,3 +38,6 @@ All actions are same as detailed in MongoDB documentation [Database-User-Roles](
 
 #### Licence: MIT
 #### Authors: [Yahav Itzhak](https://github.com/yahavi) and [Valeriya Zelikovich](https://github.com/valeriyaz)
+
+
+![](https://github.com/yahavi/NaturalMongo/blob/master/NaturalMongo.jpg)
