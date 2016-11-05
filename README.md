@@ -1,5 +1,7 @@
 # Natural Mongo
 
+![](https://github.com/yahavi/NaturalMongo/blob/master/NaturalMongo.jpg)
+
 Grant and revoke users permissions on MongoDB using natural language.
 We uses predefined roles to grant privileges on users. The roles can be applied either in the database scope and in the collection scope.
 To identify the request characteristic (i.e. grant or revoke) we are using [IBM-Watson](http://www.ibm.com/watson/)'s [Natural-Language-Classifier](https://www.ibm.com/watson/developercloud/doc/nl-classifier/) service.
@@ -38,6 +40,3 @@ All actions are same as detailed in MongoDB documentation [Database-User-Roles](
 
 #### Licence: MIT
 #### Authors: [Yahav Itzhak](https://github.com/yahavi) and [Valeriya Zelikovich](https://github.com/valeriyaz)
-
-
-![](https://github.com/yahavi/NaturalMongo/blob/master/NaturalMongo.jpg)
